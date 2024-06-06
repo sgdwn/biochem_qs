@@ -19,7 +19,7 @@ params:
   # showDescriptioninHome: true
   # hideAllTagsinHome: true
   # searchBoxPlaceholder: "Type here to search..."
-  titleIcon: q.svg
+  titleIcon: bq.svg
   headers:
     key: Title
     value: Tags
