@@ -1,6 +1,6 @@
-baseURL: https://adityatelange.github.io/hugo-index/
-languageCode: en-us
-title: Index
+baseURL: https://sgdwn.github.io/biochem_qs/
+languageCode: en-gb
+title: Biochemistry Questions
 theme: ../../
 pygmentsUseClasses: true
 enableInlineShortcodes: true
