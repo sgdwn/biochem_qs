@@ -17,7 +17,7 @@ markup:
 
 params:
   # showDescriptioninHome: true
-  hideAllTagsinHome: true
+  # hideAllTagsinHome: true
   # searchBoxPlaceholder: "Type here to search..."
   titleIcon: q.svg
   headers:
