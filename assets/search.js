@@ -16,7 +16,7 @@ window.onload = () => {
                     'title',
                     'tags.title',
                     'content',
-                ]
+                    ]
             };
             const myIndex = Fuse.createIndex(options.keys, data)
             fuse = new Fuse(data, options, myIndex);
