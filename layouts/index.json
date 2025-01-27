@@ -5,7 +5,7 @@
     {{- range (.GetTerms "tags") }}
         {{- $scratch.Add "tags" (dict "title" .LinkTitle "permalink" .RelPermalink) }}
     {{- end }}
-    {{- $scratch.Add "index" (dict "title" .Title "tags" ($scratch.Get "tags") "description" .Description "permalink" .RelPermalink) -}}
+    {{- $scratch.Add "index" (dict "title" .Title "tags" ($scratch.Get "tags") "description" .Description "permalink" .RelPermalink "content" .Plain) -}}
     {{- $scratch.Delete "tags" }}
 {{- end -}}
 {{- $scratch.Get "index" | jsonify -}}
