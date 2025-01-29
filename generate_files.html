@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Text File Generator</title>
+    <style>
+        body { font-family: sans-serif; }
+        form { display: flex; flex-direction: column; max-width: 600px; margin-bottom: 20px; }
+        form > div { margin-bottom: 10px; }
+        label { display: block; margin-bottom: 5px; }
+        input[type="text"], textarea { width: 100%; padding: 8px; box-sizing: border-box; }
+        textarea { height: 200px; }
+        button { padding: 10px 15px; cursor: pointer; }
+        #persistentTags { border: 1px solid #ccc; padding: 8px; margin-top: 5px; }
+        .tag-item { display: inline-block; background-color: #f0f0f0; padding: 5px; margin: 2px; border-radius: 3px; }
+        .tag-item span { margin-right: 5px; }
+        .tag-item button { padding: 0; border: none; background: none; color: #888; cursor: pointer; font-size: 12px; vertical-align: baseline; }
+        .tag-item button:hover { color: #333; }
+    </style>
+</head>
+<body>
+    <h1>Static Text File Generator</h1>
+
+    <form id="fileForm">
+        <div>
+            <label for="title">Title:</label>
+            <input type="text" id="title" name="title" required>
+        </div>
+        <div>
+            <label for="tags">Tags (comma-separated):</label>
+            <input type="text" id="tags" name="tags" placeholder="e.g., tag1, tag2, tag3">
+            <div id="persistentTags"></div>
+        </div>
+        <div>
+            <label for="content">Content:</label>
+            <textarea id="content" name="content" required></textarea>
+        </div>
+        <div>
+            <label for="filenamePrefix">Filename Prefix:</label>
+            <input type="text" id="filenamePrefix" name="filenamePrefix" value="file">
+        </div>
+        <button type="submit">Add File</button>
+    </form>
+
+    <button id="downloadZipButton" style="display: none;">Download Zip</button>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
+    <script>
+        const fileForm = document.getElementById('fileForm');
+        const titleInput = document.getElementById('title');
+        const tagsInput = document.getElementById('tags');
+        const contentInput = document.getElementById('content');
+        const filenamePrefixInput = document.getElementById('filenamePrefix');
+        const persistentTagsDiv = document.getElementById('persistentTags');
+        const downloadZipButton = document.getElementById('downloadZipButton');
+
+        let persistentTags = new Set(JSON.parse(localStorage.getItem('persistentTags')) || []);
+        let fileCounter = 1;
+        let files = [];
+
+        function displayPersistentTags() {
+            persistentTagsDiv.innerHTML = "";
+            persistentTags.forEach(tag => {
+                const tagItem = document.createElement('div');
+                tagItem.classList.add('tag-item');
+
+                const tagSpan = document.createElement('span');
+                tagSpan.textContent = tag;
+                tagItem.appendChild(tagSpan);
+
+                const removeButton = document.createElement('button');
+                removeButton.textContent = 'x';
+                removeButton.addEventListener('click', function() {
+                    removeTag(tag);
+                });
+                tagItem.appendChild(removeButton);
+
+                persistentTagsDiv.appendChild(tagItem);
+            });
+        }
+
+        function removeTag(tagToRemove) {
+            persistentTags.delete(tagToRemove);
+            localStorage.setItem('persistentTags', JSON.stringify(Array.from(persistentTags)));
+            displayPersistentTags();
+        }
+
+        displayPersistentTags();
+
+        fileForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const title = titleInput.value;
+            const tagsInputValue = tagsInput.value;
+            const content = contentInput.value;
+            const filenamePrefix = filenamePrefixInput.value;
+
+            // Update persistent tags
+            if (tagsInputValue) {
+                tagsInputValue.split(',').map(tag => tag.trim()).forEach(tag => {
+                    if (tag) {
+                        persistentTags.add(tag);
+                    }
+                });
+                localStorage.setItem('persistentTags', JSON.stringify(Array.from(persistentTags)));
+                displayPersistentTags();
+            }
+
+            const tagsArray = Array.from(persistentTags);
+            const fileContent = `---
+title: "${title}"
+tags:
+${tagsArray.map(tag => ` - ${tag}`).join('\n')}
+---
+${content}`;
+
+            const filename = `${filenamePrefix}${fileCounter}.txt`;
+            files.push({ filename: filename, content: fileContent });
+            fileCounter++;
+
+            titleInput.value = '';
+            contentInput.value = '';
+            tagsInput.value = ''; // Optionally clear tags input after submission
+
+            downloadZipButton.style.display = 'block';
+        });
+
+        downloadZipButton.addEventListener('click', function() {
+            if (files.length === 0) {
+                alert("No files to download.");
+                return;
+            }
+
+            const zip = new JSZip();
+            files.forEach(file => {
+                zip.file(file.filename, file.content);
+            });
+
+            zip.generateAsync({type:"blob"})
+                .then(function(content) {
+                    const downloadLink = document.createElement('a');
+                    downloadLink.href = URL.createObjectURL(content);
+                    downloadLink.download = "content.zip";
+                    downloadLink.click();
+                });
+
+            // Clear files after download if needed
+            files = [];
+            downloadZipButton.style.display = 'none';
+            fileCounter = 1; // Reset counter if needed for a new set of files
+        });
+    </script>
+</body>
+</html>
